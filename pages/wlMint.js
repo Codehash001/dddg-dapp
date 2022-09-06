@@ -115,18 +115,7 @@ useEffect(() => {
             <h1 className="font-Righteous uppercase font-bold text-3xl md:text-4xl text-brand-blue bg-clip-text mt-3">
             {paused ? 'Paused' : 'DD List FREE MINT'  } </h1>
             
-          <div className='grid grid-cols-2 mx-auto  mt-2 border rounded-lg py-auto px-auto items-center'>
-           
-           <div className='font-Righteous  mx-auto text-1xl text-bold text-white items-center text-center'>
-             <span>30</span><br/>
-             <span>MINS</span>
-           </div>
-           <div className='font-Righteous  mx-auto text-1xl text-bold text-white items-center text-center'>
-             <span >00</span><br/>
-             <span>SECS</span>
-           </div>
-
-          </div>
+          
 
             <h3 className="text-sm text-gray-100 tracking-widest">
             {walletAddress
