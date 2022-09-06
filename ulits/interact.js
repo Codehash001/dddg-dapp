@@ -95,7 +95,7 @@ export const presaleMint = async (mintAmount) => {
 
 
     gasLimit = window.BigInt( gasLimit.toString() ) * window.BigInt( 11 ) / window.BigInt( 10 );
-    await nftContract.methods.presaleMint(mintAmount, proof).send({
+    const tx = await nftContract.methods.presaleMint(mintAmount, proof).send({
       from: window.ethereum.selectedAddress,
       value: value.toString(),
       gas: gasLimit.toString()
@@ -105,9 +105,9 @@ export const presaleMint = async (mintAmount) => {
     return {
       success: true,
       status: (
-        <a href={`https://rinkeby.etherscan.io/tx/${txHash}`} target="_blank">
+        <a href={`https://etherscan.io/tx/${tx.transactionHash}`} target="_blank">
           <p>✅ Check out your transaction on Etherscan:</p>
-          <p>{`https://etherscan.io/tx/${txHash}`}</p>
+          <p>{`https://etherscan.io/tx/${tx.transactionHash}`}</p>
         </a>
       )
     }
@@ -172,20 +172,18 @@ export const publicMint = async (mintAmount) => {
 
 
     gasLimit = window.BigInt( gasLimit.toString() ) * window.BigInt( 11 ) / window.BigInt( 10 );
-    await nftContract.methods.publicSaleMint(mintAmount).send({
+    const tx = await nftContract.methods.publicSaleMint(mintAmount).send({
       from: window.ethereum.selectedAddress,
       value: value.toString(),
       gas: gasLimit.toString()
     });
 
-
-
     return {
       success: true,
       status: (
-        <a href={`https://etherscan.io/tx/${txHash}`} target="_blank">
+        <a href={`https://etherscan.io/tx/${tx.transactionHash}`} target="_blank">
           <p>✅ Check out your transaction on Etherscan:</p>
-          <p>{`https://rinkeby.etherscan.io/tx/${txHash}`}</p>
+          <p>{`https://etherscan.io/tx/${tx.transactionHash}`}</p>
         </a>
       )
     }
