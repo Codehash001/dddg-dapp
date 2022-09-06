@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Router from 'next/router'
 import { useState,useEffect } from "react"
 import { initOnboard } from "../ulits/onboard"
 import { config } from '../dapp.config'
@@ -37,24 +38,29 @@ export default function PblcMint(){
       setMaxMintAmount(
         isPublicSale ? config.maxMintAmount : '0'
       )
-      
-      
     }
 
     init()
   }, [])
   
   useEffect( () => {
-    const onboardData = initOnboard( {
-      address: (address) => setWalletAddress(address ? address : ''),
-      wallet: (wallet) => {
-        if (wallet.provider) {
-          window.localStorage.setItem('selectedWallet', wallet.name)
-        } else {
-          window.localStorage.removeItem('selectedWallet') }}
+    try{
+      const onboardData = initOnboard({
+        address: (address) => setWalletAddress(address ? address : ''),
+        wallet: (wallet) => {
+          if (wallet.provider) {
+            window.localStorage.setItem('selectedWallet', wallet.name)
+          } else {
+            window.localStorage.removeItem('selectedWallet')
+          }
+        }
+      })
+
+      setOnboard(onboardData);
     }
-    )
-  setOnboard(onboardData)
+    catch( err ){
+      Router.reload(window.location.pathname);
+    }
   }, [])
 
   const previouslySelectedWallet = typeof window !== 'undefined' &&
