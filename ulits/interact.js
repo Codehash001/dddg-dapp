@@ -1,16 +1,13 @@
+
 const { createAlchemyWeb3 } = require('@alch/alchemy-web3')
 const { MerkleTree } = require('merkletreejs')
 const keccak256 = require('keccak256')
+
+const contract = require('../artifacts/contracts/DoubleDigiDaigaku.sol/DoubleDigiDaigaku.json')
 const whitelist = require('../scripts/whitelist.js')
-
-
-
-
 import { config } from '../dapp.config'
 
 const web3 = createAlchemyWeb3(process.env.NEXT_PUBLIC_ALCHEMY_RPC_URL)
-
-const contract = require('../artifacts/contracts/DoubleDigiDaigaku.sol/DoubleDigiDaigaku.json')
 const nftContract = new web3.eth.Contract(contract.abi, config.contractAddress)
 
 // Calculate merkle root from the whitelist array
@@ -67,7 +64,6 @@ export const presaleMint = async (mintAmount) => {
 
   // Verify Merkle Proof
   const isValid = merkleTree.verify(proof, leaf, root)
-
   if (!isValid) {
     return {
       success: false,
@@ -76,42 +72,35 @@ export const presaleMint = async (mintAmount) => {
   }
   
   const wallet =(window.ethereum.selectedAddress)
-  const numberMinted = await nftContract.methods.numberMinted(wallet) .call()
+  const numberMinted = await nftContract.methods.numberMinted(wallet).call()
   console.log('You have already minted : ' + numberMinted)
   console.log ('you are going to mint : ' + mintAmount)
-  const AbleToMint = (config.presaleMaxMintAmount - numberMinted)
 
+  const AbleToMint = (config.presaleMaxMintAmount - numberMinted)
   if (AbleToMint <  mintAmount){
     return {
       success: false,
       status: '📌 You have already minted in Whitelisted sale'
-        
     }
   }
-  const nonce = await web3.eth.getTransactionCount(
-    window.ethereum.selectedAddress,
-    'latest'
-  )
 
-  // Set up our Ethereum transaction
-  const tx = {
-    to: config.contractAddress,
-    from: window.ethereum.selectedAddress,
-    value: parseInt(
-      web3.utils.toWei(String(config.preSalePrice*mintAmount), 'ether')
-    ).toString(16), // hex
-    gas: String(30000 * mintAmount),
-    data: nftContract.methods
-      .presaleMint(mintAmount, proof)
-      .encodeABI(),
-    nonce: nonce.toString(16)
-  }
 
   try {
-    const txHash = await window.ethereum.request({
-      method: 'eth_sendTransaction',
-      params: [tx]
-    })
+    const priceBN = web3.utils.toWei( config.preSalePrice.toString() );
+    const value = window.BigInt( priceBN.toString() ) * window.BigInt( mintAmount );
+    let gasLimit = await nftContract.methods.presaleMint(mintAmount, proof).estimateGas({
+      from: window.ethereum.selectedAddress,
+      value: value.toString()
+    });
+
+
+    gasLimit = window.BigInt( gasLimit.toString() ) * window.BigInt( 11 ) / window.BigInt( 10 );
+    await nftContract.methods.presaleMint(mintAmount, proof).send({
+      from: window.ethereum.selectedAddress,
+      value: value.toString(),
+      gas: gasLimit.toString()
+    });
+
 
     return {
       success: true,
@@ -172,23 +161,24 @@ export const publicMint = async (mintAmount) => {
     }*/
   
 
-  // Set up our Ethereum transaction
-  const tx = {
-    to: config.contractAddress,
-    from: window.ethereum.selectedAddress,
-    value: parseInt(
-      web3.utils.toWei(String(config.publicSalePrice*mintAmount), 'ether')
-    ).toString(16), // hex
-    gas: String(30000 * mintAmount),
-    data: nftContract.methods.publicSaleMint(mintAmount).encodeABI(),
-    nonce: nonce.toString(16)
-  }
-
   try {
-    const txHash = await window.ethereum.request({
-      method: 'eth_sendTransaction',
-      params: [tx]
-    })
+    // Set up our Ethereum transaction
+    const priceBN = web3.utils.toWei( config.publicSalePrice.toString() );
+    const value = window.BigInt( priceBN.toString() ) * window.BigInt( mintAmount );
+    let gasLimit = await nftContract.methods.publicSaleMint(mintAmount).estimateGas({
+      from: window.ethereum.selectedAddress,
+      value: value.toString()
+    });
+
+
+    gasLimit = window.BigInt( gasLimit.toString() ) * window.BigInt( 11 ) / window.BigInt( 10 );
+    await nftContract.methods.publicSaleMint(mintAmount).send({
+      from: window.ethereum.selectedAddress,
+      value: value.toString(),
+      gas: gasLimit.toString()
+    });
+
+
 
     return {
       success: true,
